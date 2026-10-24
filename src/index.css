@@ -1,9 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
-:root{font-family:'Manrope',sans-serif;color:#111;background:#f2efe8;font-synthesis:none;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
+:root{font-family:'IBM Plex Sans',system-ui,sans-serif;color:#0f172a;background:#f7f6f2;font-synthesis:none;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;color-scheme:light}
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;min-width:320px}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;min-width:320px;background:#f7f6f2}
 button,a{font:inherit}
 button{cursor:pointer}
+:focus-visible{outline:2px solid #2563eb;outline-offset:3px;border-radius:6px}
 @media(prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
