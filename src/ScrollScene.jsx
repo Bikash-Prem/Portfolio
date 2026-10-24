@@ -113,33 +113,25 @@ function llm() {
   }
 }
 
-// Speech bubble with a "typing" ellipsis, the universal chat-assistant symbol
-function chatBubble(n) {
-  const w = 1.7
-  const hh = 1.05
-  const r = 0.45
-  const outline = []
-  const steps = 10
-  const corner = (cx, cy, a0) => {
-    for (let s = 0; s < steps; s++) {
-      const a1 = a0 + (s / steps) * (Math.PI / 2)
-      const a2 = a0 + ((s + 1) / steps) * (Math.PI / 2)
-      outline.push([cx + Math.cos(a1) * r, cy + Math.sin(a1) * r, cx + Math.cos(a2) * r, cy + Math.sin(a2) * r])
-    }
-  }
-  outline.push([-w + r, hh, w - r, hh]); corner(w - r, hh - r, 0)
-  outline.push([w, hh - r, w, -hh + r]); corner(w - r, -hh + r, -Math.PI / 2)
-  outline.push([w - r, -hh, -0.6, -hh], [-0.6, -hh, -1.15, -1.75], [-1.15, -1.75, -1.05, -hh], [-1.05, -hh, -w + r, -hh])
-  corner(-w + r, -hh + r, Math.PI); outline.push([-w, -hh + r, -w, hh - r]); corner(-w + r, hh - r, Math.PI / 2)
+// Claude-style spark: tapered rays of uneven length radiating from a small core
+function claudeSpark(n) {
+  const rays = 12
+  const lengths = Array.from({ length: rays }, (_, r) => 1.55 + rand(r, 40) * 0.6)
+  const angles = Array.from({ length: rays }, (_, r) => (r / rays) * TAU + (rand(r, 41) - 0.5) * 0.12)
   return (i) => {
-    if (i / n < 0.62) {
-      const [x, y] = onSegments(outline, i, 19)
-      return { p: [x + (rand(i, 20) - 0.5) * 0.09, y + (rand(i, 21) - 0.5) * 0.09, (rand(i, 22) - 0.5) * 0.25] }
+    if (i / n < 0.1) {
+      const a = rand(i, 42) * TAU
+      const r = Math.sqrt(rand(i, 43)) * 0.32
+      return { p: [Math.cos(a) * r, Math.sin(a) * r, (rand(i, 44) - 0.5) * 0.15] }
     }
-    const dot = i % 3
-    const a = rand(i, 23) * TAU
-    const rr = Math.sqrt(rand(i, 24)) * 0.24
-    return { p: [(dot - 1) * 0.85 + Math.cos(a) * rr, Math.sin(a) * rr, 0.05] }
+    const ray = i % rays
+    const along = Math.sqrt(rand(i, 45))
+    const d = 0.18 + along * lengths[ray]
+    // Rays are wide at the root and taper to a rounded tip
+    const half = 0.16 * (1 - along * 0.75)
+    const off = (rand(i, 46) * 2 - 1) * half
+    const a = angles[ray]
+    return { p: [Math.cos(a) * d - Math.sin(a) * off, Math.sin(a) * d + Math.cos(a) * off, (rand(i, 47) - 0.5) * 0.15] }
   }
 }
 
@@ -173,7 +165,7 @@ const STAGES = [
   [bot, null, null],
   [neuralNet, '.project:nth-child(1)', '.project:nth-child(1) .project-info'],
   [llm, '.project:nth-child(2)', '.project:nth-child(2) .project-info'],
-  [chatBubble, '.project:nth-child(3)', '.project:nth-child(3) .project-info'],
+  [claudeSpark, '.project:nth-child(3)', '.project:nth-child(3) .project-info'],
   [sparkle, '#skills .section-heading', null],
   [brain, '#about .about-grid', '#about .about-copy'],
   [bot, null, null],
@@ -213,7 +205,7 @@ export default function ScrollScene() {
 
     const positions = new Float32Array(targets[0])
     const colors = new Float32Array(count * 3)
-    const palette = ['#2563eb', '#6366f1', '#0f766e', '#2563eb', '#7c3aed', '#0284c7', '#2563eb'].map((c) => new THREE.Color(c))
+    const palette = ['#2563eb', '#6366f1', '#0f766e', '#d97757', '#7c3aed', '#0284c7', '#2563eb'].map((c) => new THREE.Color(c))
     const geometry = new THREE.BufferGeometry()
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3))
     geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
@@ -301,14 +293,15 @@ export default function ScrollScene() {
     window.addEventListener('pointermove', onPointer, { passive: true })
     const look = new THREE.Vector2()
 
-    // Scrubbed progress, smoothed so the morph trails the scrollbar slightly
-    const state = { progress: 0 }
+    // Scroll progress; the render loop eases towards it so the morph trails the scrollbar smoothly
+    const state = { progress: 0, target: 0 }
     const st = ScrollTrigger.create({
       start: 0,
       end: 'max',
       onRefresh: measure,
-      onUpdate: (self) => gsap.to(state, { progress: self.progress, duration: reduceMotion ? 0 : 0.8, ease: 'power3.out', overwrite: true }),
+      onUpdate: (self) => { state.target = self.progress },
     })
+    state.target = state.progress = st.progress
     const onResize = () => { resize(); measure() }
     window.addEventListener('resize', onResize)
     measure()
@@ -320,17 +313,20 @@ export default function ScrollScene() {
     })
     pageObserver.observe(document.body)
 
-    // Morph happens in the middle of each gap, so a shape holds while its section is on screen
-    const ease = (t) => {
-      const u = Math.min(1, Math.max(0, (t - 0.25) / 0.5))
-      return u * u * (3 - 2 * u)
-    }
+    // Morph across the middle of each gap, so a shape holds while its section is on screen
+    const smoother = (u) => u * u * u * (u * (u * 6 - 15) + 10)
+    const clamp01 = (u) => Math.min(1, Math.max(0, u))
+    const ease = (t) => smoother(clamp01((t - 0.12) / 0.76))
+    // Each point starts its journey a little later than the last, so the cloud flows instead of snapping
+    const delay = new Float32Array(count)
+    for (let i = 0; i < count; i++) delay[i] = rand(i, 50) * 0.35
     const tmp = new THREE.Color()
     let time = 0
     let prev = performance.now()
     let frame = 0
 
-    const render = () => {
+    const render = (dt = 0) => {
+      state.progress = reduceMotion || !dt ? state.target : state.progress + (state.target - state.progress) * (1 - Math.exp(-dt * 4.5))
       const p = state.progress
       let seg = 0
       while (seg < last - 1 && p > stops[seg + 1]) seg++
@@ -341,16 +337,22 @@ export default function ScrollScene() {
 
       // How much "bot" is on screen: drives blinking and looking at the pointer
       const botWeight = seg === 0 ? 1 - t : seg === last - 1 ? t : 0
-      const blink = !reduceMotion && (time % 4) / 4 > 0.965 ? 0.08 : 1
+      // Soft blink: eyes close and reopen over ~0.3 s every 4 s
+      const phase = (time % 4) - 3.7
+      const blink = !reduceMotion && phase > 0 ? 1 - Math.sin((phase / 0.3) * Math.PI) * 0.92 : 1
       const wave = reduceMotion ? 0 : 0.035
+      const raw = clamp01((p - stops[seg]) / span)
 
       for (let i = 0; i < count; i++) {
         const k = i * 3
-        let y = a[k + 1] + (b[k + 1] - a[k + 1]) * t + Math.sin(time * 0.9 + i * 0.37) * wave
+        // Per-point progress, staggered within the morph window
+        const ti = smoother(clamp01(ease(raw) * 1.35 - delay[i]))
+        const lift = Math.sin(ti * Math.PI) * (0.35 + delay[i])
+        let y = a[k + 1] + (b[k + 1] - a[k + 1]) * ti + Math.sin(time * 0.9 + i * 0.37) * wave
         if (botWeight > 0 && !Number.isNaN(eyeY[i])) y = eyeY[i] + (y - eyeY[i]) * (1 - (1 - blink) * botWeight)
-        positions[k] = a[k] + (b[k] - a[k]) * t
+        positions[k] = a[k] + (b[k] - a[k]) * ti
         positions[k + 1] = y
-        positions[k + 2] = a[k + 2] + (b[k + 2] - a[k + 2]) * t
+        positions[k + 2] = a[k + 2] + (b[k + 2] - a[k + 2]) * ti + lift
       }
       geometry.attributes.position.needsUpdate = true
 
@@ -378,21 +380,23 @@ export default function ScrollScene() {
 
     const tick = () => {
       const now = performance.now()
-      time += Math.min((now - prev) / 1000, 0.05)
+      const dt = Math.min((now - prev) / 1000, 0.05)
+      time += dt
       prev = now
-      render()
+      render(dt)
       frame = requestAnimationFrame(tick)
     }
+    const renderStill = () => render()
     if (reduceMotion) {
       render()
-      gsap.ticker.add(render)
+      gsap.ticker.add(renderStill)
     } else {
       tick()
     }
 
     return () => {
       cancelAnimationFrame(frame)
-      gsap.ticker.remove(render)
+      gsap.ticker.remove(renderStill)
       st.kill()
       pageObserver.disconnect()
       cancelAnimationFrame(pending)

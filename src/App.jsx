@@ -85,10 +85,10 @@ const otherWork = [
 ]
 
 const skills = [
-  { group: 'AI / ML', items: ['LLM integration (Groq)', 'Agent memory (Hindsight)', 'Retrieval-based recall', 'ETA prediction with calibrated uncertainty', 'Graph routing (A*)', 'Satellite data (Sentinel-1/2, NASA Earthdata)'] },
+  { group: 'AI / ML', items: ['Machine Learning', 'PyTorch', 'Generative AI', 'LLM integration (Groq)', 'Retrieval-Augmented Generation (RAG)', 'Agent memory (Hindsight)', 'Retrieval-based recall', 'ETA prediction with calibrated uncertainty', 'Graph routing (A*)', 'Geospatial Analysis', 'Remote Sensing', 'Satellite data (Sentinel-1/2, NASA Earthdata)'] },
   { group: 'Languages', items: ['Python', 'Java', 'C', 'JavaScript', 'TypeScript', 'SQL'] },
-  { group: 'Backend & data', items: ['FastAPI', 'Node.js', 'Fastify', 'React', 'PostgreSQL', 'PostGIS'] },
-  { group: 'Tools', items: ['Git', 'GitHub', 'Docker', 'Linux', 'REST APIs'] },
+  { group: 'Backend & data', items: ['FastAPI', 'Node.js', 'Fastify', 'React', 'PostgreSQL', 'PostGIS', 'API Development'] },
+  { group: 'Tools', items: ['Git', 'GitHub', 'Docker', 'Linux', 'REST APIs', 'System Design'] },
 ]
 
 const timeline = [
@@ -303,7 +303,6 @@ function App() {
           <div className="hero-bg" aria-hidden="true" />
           <div className="hero-inner">
             <div className="hero-copy">
-              <div className="eyebrow hero-anim"><span className="dot" /> Seeking an Applied AI Engineering internship</div>
               <h1>
                 <span className="hero-name hero-anim">Bikash Kumar Sah</span>
                 <span className="hero-line hero-anim">I build <RotatingRole /></span>
