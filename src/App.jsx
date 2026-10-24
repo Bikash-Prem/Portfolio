@@ -102,7 +102,7 @@ const certs = [
   { name: 'Java certification, Infosys' },
 ]
 
-const marquee = ['Python', 'FastAPI', 'Node.js', 'Fastify', 'React', 'TypeScript', 'PostGIS', 'Groq', 'Hindsight', 'Docker', 'Sentinel-1/2', 'NASA Earthdata', 'A* routing', 'Java']
+const marquee = ['Python', 'FastAPI', 'Node.js', 'Fastify', 'React', 'TypeScript', 'PostGIS', 'Groq', 'Hindsight', 'Docker', 'Java']
 
 function GithubIcon({ size = 16 }) {
   return (
