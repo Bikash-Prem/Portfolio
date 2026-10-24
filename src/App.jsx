@@ -20,7 +20,7 @@ const GMAIL_COMPOSE = `https://mail.google.com/mail/?view=cm&fs=1&to=${EMAIL}`
 gsap.registerPlugin(ScrollTrigger, useGSAP)
 
 // three.js is loaded on demand so it doesn't block the first paint
-const HeroWave = lazy(() => import('./HeroWave.jsx'))
+const ScrollScene = lazy(() => import('./ScrollScene.jsx'))
 
 const roles = ['AI-powered applications', 'geospatial pipelines', 'backend APIs']
 
@@ -97,7 +97,10 @@ const timeline = [
   { period: '2021 – 2023', title: 'Higher Secondary (PCMC) 89% · Secondary 99%', org: "Shree Sukdev's School with Pre-University", kind: 'Education' },
 ]
 
-const certs = ['Python certification, NPTEL', 'Java certification, Infosys']
+const certs = [
+  { name: 'Python certification, NPTEL', href: 'https://lnkd.in/p/dFFsS-AH' },
+  { name: 'Java certification, Infosys' },
+]
 
 const marquee = ['Python', 'FastAPI', 'Node.js', 'Fastify', 'React', 'TypeScript', 'PostGIS', 'Groq', 'Hindsight', 'Docker', 'Sentinel-1/2', 'NASA Earthdata', 'A* routing', 'Java']
 
@@ -275,6 +278,7 @@ function App() {
 
   return (
     <div ref={rootRef}>
+      <Suspense fallback={null}><ScrollScene /></Suspense>
       <div className="scroll-progress" aria-hidden="true" />
       <a className="skip-link" href="#work">Skip to projects</a>
       <nav className={`nav ${scrolled ? 'scrolled' : ''}`} aria-label="Primary">
@@ -297,7 +301,6 @@ function App() {
       <main>
         <section id="top" className="hero section-pad">
           <div className="hero-bg" aria-hidden="true" />
-          <Suspense fallback={null}><HeroWave /></Suspense>
           <div className="hero-inner">
             <div className="hero-copy">
               <div className="eyebrow hero-anim"><span className="dot" /> Seeking an Applied AI Engineering internship</div>
@@ -405,7 +408,13 @@ function App() {
               <p>Most of my recent work has been in hackathon and program teams, where I take ownership of the backend, the data pipeline or the prediction component and ship it with tests and CI.</p>
               <div className="certs">
                 <span className="eyebrow-label muted">Certifications</span>
-                <ul>{certs.map((c) => <li key={c}>{c}</li>)}</ul>
+                <ul>
+                  {certs.map((c) => (
+                    <li key={c.name}>
+                      {c.href ? <a href={c.href} target="_blank" rel="noreferrer">{c.name} <ArrowIcon size={12} /></a> : c.name}
+                    </li>
+                  ))}
+                </ul>
               </div>
             </Reveal>
             <Reveal as="ol" className="timeline">
